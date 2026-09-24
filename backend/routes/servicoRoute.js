@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import ServicoController from '../controllers/servicoController.js';
+import { auth, roles } from '../middlewares/auth.js';
+import { wrap } from '../middlewares/error.js';
+const router = Router();
+const controller = new ServicoController();
+const administrador = [auth, roles('ADMIN')];
+router.get('/', wrap(controller.listar));
+router.post('/', ...administrador, wrap(controller.cadastrar));
+router.put('/:id', ...administrador, wrap(controller.editar));
+router.delete('/:id', ...administrador, wrap(controller.desativar));
+export default router;

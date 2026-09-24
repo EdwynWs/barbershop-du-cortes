@@ -1,0 +1,443 @@
+/* Painel administrativo. */
+.date-label {
+    color: #a6b5bd;
+    border: 1px solid #30434d;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.metrics-revenue {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 13px;
+    margin-bottom: 14px;
+}
+.metric-card {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    position: relative;
+    min-width: 0;
+}
+.metric-card > span {
+    font-size: 11px;
+    color: #bfcdd2;
+}
+.metric-card strong {
+    font-size: clamp(14px, 11cqw, 29px);
+    font-weight: 500;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.metric-card > small {
+    color: #71878f;
+    font-size: 10px;
+}
+.metric-accent {
+    border-color: #74313b;
+    background: linear-gradient(130deg, #271418, #0e1215);
+}
+.metric-icon {
+    color: var(--red);
+    font-size: 17px;
+    margin-bottom: 3px;
+}
+.metrics-small {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.metrics-small .metric-card {
+    padding: 16px;
+    gap: 6px;
+}
+.metrics-small .metric-card strong {
+    font-size: clamp(13px, 19cqw, 22px);
+}
+.metrics-small .metric-card > span {
+    font-size: 10px;
+}
+.metrics-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+    margin-bottom: 16px;
+}
+.dashboard-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+.chart-panel {
+    min-width: 0;
+    margin-bottom: 20px;
+}
+.dashboard-main-grid .chart-panel {
+    margin-bottom: 0;
+}
+.revenue-chart {
+    width: 100%;
+    height: 248px;
+    margin-top: 22px;
+}
+.chart-legend {
+    color: #8299a3;
+    font-size: 10px;
+}
+.chart-legend i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    margin-right: 6px;
+}
+.highlights {
+    padding: 19px;
+}
+.highlights h2 {
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+.highlight-row {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #26383f;
+}
+.highlight-row:last-child {
+    border: 0;
+    padding-bottom: 0;
+}
+.highlight-row > div {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.highlight-row small {
+    font-size: 10px;
+    color: #a0b2bb;
+}
+.highlight-row strong {
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+.highlight-row b {
+    font-size: 17px;
+    font-weight: 500;
+}
+.highlight-icon {
+    width: 36px;
+    height: 40px;
+    border-radius: 6px;
+    background: #301319;
+    color: var(--red);
+    display: grid;
+    place-items: center;
+    font-size: 21px;
+}
+.highlight-icon.gold {
+    color: #f1b53c;
+    background: #312711;
+}
+.highlight-row > svg {
+    color: #76909e;
+}
+.period-filter {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+.period-filter .tabs {
+    margin-bottom: 0;
+}
+.date-range {
+    display: flex;
+    gap: 9px;
+}
+.date-range label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #8ea4af;
+}
+.date-range input {
+    font-size: 11px;
+    padding: 8px;
+    max-width: 145px;
+}
+.agenda-list {
+    border-top: 1px solid #243841;
+}
+.agenda-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 16px 2px;
+    border-bottom: 1px solid #243841;
+}
+.agenda-time {
+    min-width: 57px;
+    display: grid;
+    gap: 3px;
+}
+.agenda-time strong {
+    font-size: 15px;
+    font-weight: 500;
+}
+.agenda-time small {
+    font-size: 9px;
+    color: #7d97a4;
+}
+.agenda-copy {
+    flex: 1;
+    min-width: 0;
+}
+.agenda-copy h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+}
+.agenda-copy p {
+    margin: 0;
+    font-size: 11px;
+}
+.agenda-actions {
+    display: flex;
+    gap: 4px;
+}
+.agenda-actions select {
+    max-width: 112px;
+    font-size: 10px;
+    padding: 7px;
+}
+.search-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #324853;
+    border-radius: 6px;
+    padding: 0 12px;
+    background: #0a1419;
+    margin-bottom: 18px;
+    color: #8aa3b0;
+}
+.search-field input {
+    border: 0;
+    background: transparent;
+    padding: 12px 0;
+}
+.customer-list {
+    display: grid;
+}
+.customer-row {
+    width: 100%;
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding: 15px 0;
+    border: 0;
+    border-bottom: 1px solid #22363f;
+    background: transparent;
+    text-align: left;
+}
+.customer-row .list-copy strong {
+    font-size: 13px;
+}
+.customer-value {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.customer-value b {
+    font-size: 12px;
+    font-weight: 500;
+}
+.customer-value small {
+    font-size: 10px;
+    color: #7d98a6;
+}
+.customer-profile {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+.customer-profile .photo {
+    height: 75px;
+    width: 75px;
+}
+.customer-profile h2 {
+    margin-bottom: 5px;
+}
+.customer-profile p {
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+.customer-profile small {
+    color: #7a96a5;
+}
+.management-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.management-grid .list-card {
+    padding: 15px;
+}
+.management-grid .photo-person {
+    width: 56px;
+    height: 56px;
+}
+.management-grid .status {
+    margin-top: 5px;
+}
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #20323c;
+    padding: 15px 0;
+}
+.receipt-row:last-child {
+    border: 0;
+}
+.receipt-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.receipt-row > div:last-child {
+    align-items: flex-end;
+}
+.receipt-row strong,
+.receipt-row b {
+    font-size: 13px;
+    font-weight: 500;
+}
+.receipt-row small {
+    font-size: 10px;
+    color: #89a4b1;
+}
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+}
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #253e4a;
+    border-radius: 8px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 420px;
+}
+th,
+td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #223945;
+    font-size: 12px;
+}
+th {
+    font-size: 10px;
+    color: #90acbb;
+    background: #101c22;
+    font-weight: 500;
+}
+td {
+    color: #d2e0e8;
+}
+.ranking-row {
+    margin: 20px 0;
+}
+.ranking-row > div {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.ranking-row strong {
+    font-size: 12px;
+    font-weight: 500;
+}
+.ranking-row span {
+    color: #96b0bf;
+    font-size: 11px;
+}
+.ranking-track {
+    display: block;
+    height: 7px;
+    border-radius: 3px;
+    background: #19303d;
+    overflow: hidden;
+}
+.ranking-track i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #c90d26, #ff2944);
+    border-radius: 3px;
+}
+.promo-admin > svg {
+    color: var(--red);
+    display: block;
+    font-size: 26px;
+    margin-bottom: 16px;
+}
+.promo-admin > small {
+    font-size: 9px;
+    color: var(--red);
+    letter-spacing: 1px;
+}
+.promo-admin h2 {
+    margin: 8px 0;
+}
+.promo-admin > strong {
+    display: block;
+    color: #ff3b53;
+    margin: 20px 0 10px;
+}
+.settings-page {
+    max-width: 800px;
+}
+.settings-page .panel {
+    margin-bottom: 20px;
+}
+.settings-link {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 15px 0;
+}
+.settings-link span {
+    flex: 1;
+    font-size: 13px;
+}
+.settings-link small {
+    display: block;
+    color: #8da6b5;
+    margin-top: 6px;
+    font-size: 11px;
+}

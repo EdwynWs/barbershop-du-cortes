@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import BarbeiroController from '../controllers/barbeiroController.js';
+import { auth, roles } from '../middlewares/auth.js';
+import { wrap } from '../middlewares/error.js';
+const router = Router();
+const controller = new BarbeiroController();
+const administrador = [auth, roles('ADMIN')];
+router.get('/', wrap(controller.listar));
+router.post('/', ...administrador, wrap(controller.cadastrar));
+router.patch('/:id', ...administrador, wrap(controller.editar));
+export default router;

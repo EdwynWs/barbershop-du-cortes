@@ -1,0 +1,635 @@
+/* Páginas do cliente. */
+.client-narrow {
+    max-width: 700px;
+    margin: 0 auto;
+}
+.greeting {
+    margin-bottom: 24px;
+}
+.greeting .eyebrow {
+    display: inline-block;
+    margin-bottom: 9px;
+    font-size: 8px;
+}
+.greeting h1 {
+    margin: 0 0 5px;
+}
+.greeting p {
+    margin: 0;
+}
+.wave {
+    color: #ffd046;
+    font-size: 0.8em;
+}
+.home-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 28px;
+}
+.style-banner {
+    border: 1px solid #e11d31;
+    height: 263px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #11191b;
+}
+.banner-photo {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+}
+.banner-photo .photo-fallback {
+    background: linear-gradient(110deg, #070a0b 15%, #101a1d 57%, #362128 100%);
+}
+.banner-photo .photo-fallback svg {
+    position: absolute;
+    right: 22px;
+    width: 40%;
+    height: 60%;
+    color: #65535a;
+    opacity: 0.45;
+    transform: rotate(-17deg);
+}
+.style-banner:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #050809df, #05080911 80%);
+}
+.banner-copy {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 25px;
+}
+.banner-copy small {
+    color: #9fadb0;
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+}
+.banner-copy h2 {
+    color: #fff;
+    font-family: Impact, 'Arial Narrow', sans-serif;
+    font-style: italic;
+    font-size: clamp(35px, 3.5vw, 51px);
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 15px;
+}
+.banner-copy h2 span {
+    color: var(--red);
+}
+.banner-line {
+    width: 36px;
+    height: 3px;
+    background: var(--red);
+}
+.booking-cta {
+    margin: 12px 0 16px;
+    min-height: 47px;
+}
+.booking-cta svg:last-child {
+    margin-left: auto;
+}
+.booking-cta svg:first-child {
+    margin-right: auto;
+}
+.shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+}
+.shortcut-grid a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(120deg, #111b1d, #080c0e);
+    border: 1px solid #253238;
+    border-radius: 7px;
+    padding: 16px 8px 12px;
+    text-align: center;
+}
+.shortcut-grid svg {
+    font-size: 23px;
+    color: #dde4e7;
+}
+.shortcut-grid span {
+    font-size: 11px;
+    line-height: 1.35;
+    max-width: 58px;
+}
+.shortcut-grid a:hover {
+    border-color: var(--red);
+}
+.home-secondary section + section {
+    margin-top: 22px;
+}
+.home-secondary .section-heading h2 {
+    font-size: 15px;
+}
+.next-appointment {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px;
+}
+.next-appointment h3 {
+    margin: 8px 0 5px;
+}
+.next-appointment p {
+    font-size: 11px;
+    margin-bottom: 0;
+}
+.date-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 47px;
+    border: 1px solid #344248;
+    border-radius: 6px;
+    overflow: hidden;
+    color: #c9d5d9;
+}
+.date-tile strong {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.1;
+    padding: 3px 5px;
+}
+.date-tile > span,
+.date-tile > small:first-child {
+    background: var(--red);
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 9px;
+}
+.date-tile small:last-child {
+    text-transform: uppercase;
+    padding-bottom: 3px;
+    font-size: 9px;
+}
+.promotion-card {
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0b1315;
+    margin-bottom: 10px;
+}
+.promotion-card > span:not(.photo) {
+    flex: 1;
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+.promotion-card strong {
+    text-transform: uppercase;
+    font-size: 13px;
+}
+.promotion-card small {
+    color: #8c9ba1;
+    font-size: 7px;
+    letter-spacing: 1px;
+}
+.promotion-card span span {
+    font-size: 11px;
+    color: var(--muted);
+}
+.promotion-card b {
+    color: #ff4b5d;
+    font-size: 12px;
+}
+.promotion-card .photo {
+    width: 79px;
+    height: 94px;
+}
+.quiet-promo {
+    padding: 22px;
+}
+.quiet-promo > svg {
+    color: #f0253b;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+.quiet-promo p {
+    font-size: 12px;
+}
+.quiet-promo .btn-outline {
+    font-size: 11px;
+}
+.signature {
+    font-family: Impact, 'Arial Narrow', sans-serif;
+    font-style: italic;
+    font-size: 19px;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    color: #849397;
+    text-align: right;
+    margin-top: 26px;
+}
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+.tabs button {
+    border: 1px solid #253136;
+    background: linear-gradient(#182125, #10171a);
+    color: #d0d9dd;
+    border-radius: 6px;
+    min-height: 36px;
+    padding: 8px 13px;
+    font-size: 11px;
+}
+.tabs button.active {
+    background: #f5f6f7;
+    border-color: white;
+    color: #101518;
+    font-weight: bold;
+}
+.tabs button.active.red {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+}
+.tabs-equal button {
+    flex: 1;
+}
+.service-list {
+    display: grid;
+    gap: 10px;
+}
+.list-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    border: 1px solid #293539;
+    border-radius: 8px;
+    background: linear-gradient(110deg, #11191c, #090f11);
+    color: #f1f4f6;
+    padding: 10px;
+}
+.list-card:hover,
+.list-card.is-selected {
+    border-color: var(--red);
+}
+.list-card.is-selected {
+    box-shadow: inset 0 0 0 1px #fa122c45;
+}
+.list-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.list-copy strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+.list-copy small {
+    color: var(--muted);
+    font-size: 11px;
+}
+.list-copy b {
+    font-size: 13px;
+}
+.list-chevron {
+    color: #a2b1b7;
+    margin-right: 7px;
+}
+.service-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 3px;
+}
+.service-meta b {
+    color: #e2e9ec;
+    font-size: 12px;
+}
+.service-meta > span {
+    color: #778b94;
+    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.selection-circle {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    border: 1px solid #8b9a9f;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    margin-right: 3px;
+}
+.is-selected .selection-circle {
+    background: var(--red);
+    border-color: var(--red);
+}
+.rating {
+    color: #f6b633;
+    font-size: 12px;
+}
+.rating span {
+    color: #dbe4e7;
+    font-size: 11px;
+}
+.booking-progress {
+    display: flex;
+    gap: 4px;
+    margin: 24px 0 30px;
+}
+.booking-progress > div {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #5b6f79;
+}
+.booking-progress > div:before {
+    content: '';
+    height: 1px;
+    background: #26333a;
+    width: calc(100% - 30px);
+    position: absolute;
+    left: calc(50% + 17px);
+    top: 12px;
+}
+.booking-progress > div:last-child:before {
+    display: none;
+}
+.booking-progress span {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid #35454c;
+    border-radius: 50%;
+    font-size: 10px;
+}
+.booking-progress small {
+    font-size: 9px;
+}
+.booking-progress .active {
+    color: #f3f6f8;
+}
+.booking-progress .active span {
+    border-color: var(--red);
+    background: var(--red);
+}
+.step-title {
+    font-size: 17px;
+}
+.calendar {
+    border: 1px solid #304046;
+    background: #091012;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+.calendar-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: capitalize;
+    margin-bottom: 10px;
+}
+.calendar-heading strong {
+    font-size: 13px;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+    text-align: center;
+}
+.calendar-grid small {
+    color: #92a4ad;
+    font-size: 10px;
+    padding: 10px 0;
+}
+.calendar-grid button {
+    aspect-ratio: 1.2;
+    max-height: 48px;
+    padding: 5px;
+    border: 0;
+    background: transparent;
+    border-radius: 7px;
+    font-size: 12px;
+}
+.calendar-grid button:hover {
+    background: #263239;
+}
+.calendar-grid button.selected,
+.slot-grid button.selected {
+    background: var(--red);
+    color: white;
+    border-color: var(--red);
+}
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 18px 0 25px;
+}
+.slot-grid button {
+    border: 1px solid #425258;
+    border-radius: 6px;
+    background: #10181b;
+    padding: 11px 5px;
+    font-size: 13px;
+}
+.confirmation-list {
+    padding: 0 17px;
+    margin-bottom: 18px;
+}
+.confirmation-list > div {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid #233139;
+}
+.confirmation-list > div:last-child {
+    border: 0;
+}
+.confirmation-list svg {
+    font-size: 19px;
+    margin-top: 6px;
+    color: #a8b6bc;
+}
+.confirmation-list span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.confirmation-list small {
+    color: var(--muted);
+    font-size: 11px;
+}
+.confirmation-list strong {
+    font-size: 13px;
+    font-weight: normal;
+}
+.success-screen {
+    padding-top: 60px;
+    text-align: center;
+    max-width: 460px;
+}
+.success-check {
+    display: grid;
+    place-items: center;
+    width: 90px;
+    height: 90px;
+    border: 2px solid white;
+    border-radius: 50%;
+    margin: 0 auto 30px;
+    font-size: 48px;
+}
+.success-screen .panel {
+    margin: 28px 0;
+}
+.appointment-card {
+    padding: 12px 13px 0;
+    margin-bottom: 13px;
+}
+.appointment-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 13px;
+}
+.appointment-copy {
+    min-width: 0;
+    flex: 1;
+}
+.appointment-copy h3 {
+    font-size: 13px;
+    margin: 0;
+}
+.appointment-copy p {
+    font-size: 12px;
+    margin: 5px 0;
+}
+.appointment-copy > span {
+    color: #bbc8ce;
+    font-size: 11px;
+}
+.card-action {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid #2b3c43;
+    background: transparent;
+    color: #dbe4e9;
+    font-size: 11px;
+    padding: 11px;
+}
+.schedule-prompt {
+    margin-top: 25px;
+    border-color: #ba1830;
+    padding: 24px;
+}
+.schedule-prompt h2 {
+    font:
+        italic 25px Impact,
+        'Arial Narrow',
+        sans-serif;
+}
+.schedule-prompt p {
+    font-size: 12px;
+}
+.star-picker {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0 24px;
+}
+.star-picker button {
+    border: 0;
+    color: #4b5a61;
+    background: none;
+    font-size: 32px;
+}
+.star-picker button.active {
+    color: #ffbe36;
+}
+.profile-heading {
+    text-align: center;
+    padding: 10px 0 28px;
+}
+.profile-heading .photo {
+    width: 85px;
+    height: 85px;
+    margin-bottom: 14px;
+}
+.profile-heading h2 {
+    margin-bottom: 7px;
+}
+.profile-heading p {
+    font-size: 12px;
+}
+.profile-heading .btn-outline {
+    width: 100%;
+    min-height: 35px;
+    padding: 7px;
+}
+.profile-links {
+    margin-bottom: 25px;
+}
+.profile-links > a,
+.profile-links summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 4px;
+    border-bottom: 1px solid #233239;
+    font-size: 13px;
+}
+.profile-links a span {
+    flex: 1;
+}
+.profile-links details p {
+    padding: 14px;
+    font-size: 12px;
+}
+.notification-card {
+    margin-bottom: 10px;
+}
+.notification-card.is-read {
+    opacity: 0.65;
+}
+.notification-icon {
+    width: 43px;
+    height: 43px;
+    background: #7d1425;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    font-size: 21px;
+}
+.unread-dot {
+    height: 7px;
+    width: 7px;
+    background: var(--red);
+    border-radius: 50%;
+}

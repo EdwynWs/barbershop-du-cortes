@@ -1,0 +1,93 @@
+/* Marca e espaços de imagem. */
+.brand {
+    display: flex;
+    justify-content: center;
+    color: #fff;
+}
+.brand > img {
+    object-fit: contain;
+    max-width: 190px;
+    height: 125px;
+}
+.brand-compact > img {
+    max-width: 155px;
+    height: 62px;
+}
+.brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Impact, 'Arial Narrow', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.6px;
+    line-height: 1.05;
+}
+.brand-mark strong {
+    display: block;
+    color: #fff;
+    font-size: 30px;
+}
+.brand-mark small {
+    display: block;
+    color: #a7b2b4;
+    font:
+        8px Arial,
+        sans-serif;
+    letter-spacing: 3px;
+    margin-top: 7px;
+}
+.brand-scissors {
+    border: 1px solid #68787b;
+    border-radius: 50%;
+    padding: 13px;
+    font-size: 33px;
+    color: var(--red);
+}
+.brand-compact .brand-mark {
+    font-size: 14px;
+    gap: 9px;
+}
+.brand-compact .brand-mark strong {
+    font-size: 21px;
+}
+.brand-compact .brand-scissors {
+    padding: 9px;
+    font-size: 23px;
+}
+.brand-compact .brand-mark small {
+    letter-spacing: 1.5px;
+    font-size: 6px;
+}
+.photo {
+    position: relative;
+    display: inline-flex;
+    width: 64px;
+    height: 68px;
+    flex: none;
+    overflow: hidden;
+    border-radius: 7px;
+    background: #172024;
+    vertical-align: middle;
+}
+.photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.photo-fallback {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(ellipse at 30% 0, #37464a, #121c20 80%);
+    color: #6c8188;
+    font-size: 28px;
+}
+.photo-person {
+    border-radius: 50%;
+    width: 46px;
+    height: 46px;
+}
+.photo-person .photo-fallback {
+    font-size: 24px;
+}

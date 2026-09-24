@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import * as controller from '../controllers/authController.js';
+import { atualizarPerfil } from '../controllers/perfilController.js';
+import { auth } from '../middlewares/auth.js';
+import { wrap } from '../middlewares/error.js';
+const router = Router();
+router.post('/cadastro', wrap(controller.cadastro));
+router.post('/login', wrap(controller.login));
+router.post('/logout', controller.logout);
+router.get('/me', auth, wrap(controller.me));
+router.put('/perfil', auth, wrap(atualizarPerfil));
+export default router;

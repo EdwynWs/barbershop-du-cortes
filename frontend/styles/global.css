@@ -1,0 +1,9 @@
+/* Importação central. Edite cada arquivo pelo assunto correspondente. */
+@import './base.css';
+@import './images.css';
+@import './layout.css';
+@import './cliente.css';
+@import './admin.css';
+@import './forms.css';
+@import './auth.css';
+@import './responsive.css';
