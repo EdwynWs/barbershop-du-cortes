@@ -14,7 +14,8 @@ const labels = {
     ser_nome: 'Serviço',
     usu_nome: 'Nome',
     avaliacao: 'Avaliação',
-    total_gasto: 'Total gasto',
+    total_gasto: 'Total recebido',
+    valor_servicos: 'Valor dos serviços concluídos',
     dia_semana: 'Dia da semana',
     hora: 'Horário',
 };
@@ -22,16 +23,19 @@ const weekdays = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado
 export default function ReportsPage() {
     const [period, setPeriod] = useState({ inicio: today().slice(0, 7) + '-01', fim: today() });
     const [type, setType] = useState('faturamento');
-    const report = useApi(`/admin/relatorios/${type}?inicio=${period.inicio}&fim=${period.fim}`);
+    const report = useApi(`/admin/relatorios/${type}?inicio=${period.inicio}&fim=${period.fim}`, {
+        refreshInterval: 15000,
+    });
     const rows = report.data || [];
     const total = rows.reduce(
-        (sum, item) => sum + Number(item.faturamento || item.total_gasto || 0),
+        (sum, item) => sum + Number(item.faturamento ?? item.total_gasto ?? 0),
         0
     );
+    const serviceValue = rows.reduce((sum, item) => sum + Number(item.valor_servicos || 0), 0);
     const count = rows.reduce((sum, item) => sum + Number(item.atendimentos || 0), 0);
     const columns = rows[0] ? Object.keys(rows[0]) : [];
     function format(key, value) {
-        if (['faturamento', 'total_gasto'].includes(key)) return money(value);
+        if (['faturamento', 'total_gasto', 'valor_servicos'].includes(key)) return money(value);
         if (key === 'periodo') return dateLabel(value);
         if (key === 'dia_semana') return weekdays[value];
         if (key === 'hora') return `${value}h–${Number(value) + 1}h`;
@@ -40,18 +44,21 @@ export default function ReportsPage() {
     const maximum = Math.max(
         1,
         ...rows.map((item) =>
-            Number(item.faturamento || item.total_gasto || item.atendimentos || 0)
+            Number(item.faturamento ?? item.total_gasto ?? item.atendimentos ?? 0)
         )
     );
     return (
         <>
-            <PageHeader title="Relatórios" subtitle="Os resultados que ajudam você a decidir." />
+            <PageHeader
+                title="Relatórios"
+                subtitle="Receita pela data do pagamento. Atendimentos e ticket pela data do serviço."
+            />
             <PeriodFilter value={period} onChange={setPeriod} />
             <div className="tabs">
                 {[
                     ['faturamento', 'Faturamento'],
                     ['servicos', 'Serviços'],
-                    ['barbeiros', 'Barbeiros'],
+
                     ['clientes', 'Clientes'],
                     ['horarios', 'Horários'],
                 ].map(([value, label]) => (
@@ -72,16 +79,16 @@ export default function ReportsPage() {
                     <div className="metrics-revenue">
                         {type !== 'horarios' && (
                             <MetricCard
-                                label="Faturamento no período"
+                                label="Receita recebida no período"
                                 value={money(total)}
                                 accent
                             />
                         )}
-                        <MetricCard label="Atendimentos" value={count} />
+                        <MetricCard label="Atendimentos concluídos" value={count} />
                         {type !== 'horarios' && (
                             <MetricCard
                                 label="Ticket médio"
-                                value={money(count ? total / count : 0)}
+                                value={money(count ? serviceValue / count : 0)}
                             />
                         )}
                     </div>
@@ -92,7 +99,7 @@ export default function ReportsPage() {
                             <div className="panel">
                                 <h2>
                                     {type === 'faturamento'
-                                        ? 'Evolução do faturamento'
+                                        ? 'Recebimentos por dia'
                                         : 'Ranking do período'}
                                 </h2>
                                 {type === 'faturamento' ? (
@@ -111,7 +118,7 @@ export default function ReportsPage() {
                                                         {item.faturamento !== undefined ||
                                                         item.total_gasto !== undefined
                                                             ? money(
-                                                                  item.faturamento ||
+                                                                  item.faturamento ??
                                                                       item.total_gasto
                                                               )
                                                             : `${item.atendimentos} atendimentos`}
@@ -120,7 +127,7 @@ export default function ReportsPage() {
                                                 <span className="ranking-track">
                                                     <i
                                                         style={{
-                                                            width: `${(Number(item.faturamento || item.total_gasto || item.atendimentos || 0) / maximum) * 100}%`,
+                                                            width: `${(Number(item.faturamento ?? item.total_gasto ?? item.atendimentos ?? 0) / maximum) * 100}%`,
                                                         }}
                                                     />
                                                 </span>

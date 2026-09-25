@@ -15,8 +15,17 @@ export default function SignupPage() {
         event.preventDefault();
         setBusy(true);
         try {
-            await api('/auth/cadastro', { method: 'POST', body: JSON.stringify(form) });
-            router.push('/login');
+            const resultado = await api('/auth/cadastro', {
+            method: 'POST',
+            body: JSON.stringify(form),
+        });
+
+        const parametros = new URLSearchParams({
+            email: form.email.trim().toLowerCase(),
+            enviado: String(resultado.emailEnviado),
+        });
+
+        router.push(`/confirmar-email?${parametros.toString()}`);
         } catch (error) {
             setError(error.message);
         } finally {
@@ -57,6 +66,10 @@ export default function SignupPage() {
             </form>
             <p className="auth-switch">
                 Já tem conta? <Link href="/login">Entrar</Link>
+            </p>
+            <p className="auth-switch">
+                Não confirmou seu e-mail?{' '}
+                <Link href="/confirmar-email">Reenviar confirmação</Link>
             </p>
         </AuthLayout>
     );

@@ -1,133 +1,92 @@
 import { query } from '../config/db.js';
-const income = `FROM tb_pagamento p JOIN tb_agendamento a ON a.age_id=p.age_id WHERE p.pag_status='PAGO' AND a.age_status='CONCLUIDO'`;
+import { movimentosFinanceiros } from './movimentosFinanceiros.js';
+
 export async function dashboard() {
-    const [summary, daily, monthly, best, top, barber, expenses, counts, rating, newClients] =
-        await Promise.all([
-            query(
-                `
-                    SELECT COALESCE(SUM(p.pag_valor),0)::numeric AS total,
-                        COALESCE(SUM(p.pag_valor) FILTER(
-                    WHERE (p.pag_data AT TIME ZONE 'America/Sao_Paulo')::date=(CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date),0) AS today
-                    FROM tb_pagamento p
-                    JOIN tb_agendamento a ON a.age_id=p.age_id
-                    WHERE p.pag_status='PAGO'
-                        AND a.age_status='CONCLUIDO'
-                `
-            ),
-            query(
-                `
-                    SELECT (p.pag_data AT TIME ZONE 'America/Sao_Paulo')::date AS dia,
-                        SUM(p.pag_valor)::numeric AS total ${income}
-                        AND p.pag_data>=now()-interval '7 days'
-                    GROUP BY 1
-                    ORDER BY 1
-                `
-            ),
-            query(
-                `
-                    SELECT to_char(p.pag_data AT TIME ZONE 'America/Sao_Paulo','YYYY-MM') AS mes,
-                        SUM(p.pag_valor)::numeric AS total ${income}
-                        AND p.pag_data>=date_trunc('month',now())-interval '11 months'
-                    GROUP BY 1
-                    ORDER BY 1
-                `
-            ),
-            query(
-                `
-                    SELECT (p.pag_data AT TIME ZONE 'America/Sao_Paulo')::date AS dia,
-                        SUM(p.pag_valor)::numeric AS faturamento,
-                        COUNT(DISTINCT a.age_id)::int AS atendimentos ${income}
-                        AND p.pag_data>=date_trunc('month',now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo'
-                    GROUP BY 1
-                    ORDER BY faturamento DESC
-                    LIMIT 1
-                `
-            ),
-            query(
-                `
-                    SELECT s.ser_id,
-                        s.ser_nome,
-                        COUNT(DISTINCT a.age_id)::int AS quantidade,
-                        COALESCE(SUM(p.pag_valor),0)::numeric AS faturamento
-                    FROM tb_agendamento a
-                    JOIN tb_servico s ON s.ser_id=a.ser_id
-                    LEFT JOIN tb_pagamento p ON p.age_id=a.age_id
-                        AND p.pag_status='PAGO'
-                    WHERE a.age_status='CONCLUIDO'
-                    GROUP BY s.ser_id
-                    ORDER BY quantidade DESC
-                    LIMIT 1
-                `
-            ),
-            query(
-                `
-                    SELECT u.usu_nome,
-                        COUNT(DISTINCT a.age_id)::int AS atendimentos,
-                        COALESCE(SUM(p.pag_valor),0)::numeric AS faturamento
-                    FROM tb_agendamento a
-                    JOIN tb_barbeiro b ON b.bar_id=a.bar_id
-                    JOIN tb_usuario u ON u.usu_id=b.usu_id
-                    LEFT JOIN tb_pagamento p ON p.age_id=a.age_id
-                        AND p.pag_status='PAGO'
-                    WHERE a.age_status='CONCLUIDO'
-                    GROUP BY u.usu_id
-                    ORDER BY faturamento DESC
-                    LIMIT 1
-                `
-            ),
-            query(
-                `
-                    SELECT COALESCE(SUM(des_valor),0)::numeric AS total
-                    FROM tb_despesa
-                    WHERE des_data>=date_trunc('month',now() AT TIME ZONE 'America/Sao_Paulo')::date
-                `
-            ),
-            query(
-                `
-                    SELECT COUNT(*) FILTER(
-                    WHERE age_data=(now() AT TIME ZONE 'America/Sao_Paulo')::date AND age_status='CONCLUIDO')::int AS hoje,
-                        COUNT(*) FILTER(
-                    WHERE age_data>=date_trunc('month',now() AT TIME ZONE 'America/Sao_Paulo')::date AND age_status='CONCLUIDO')::int AS mes
-                    FROM tb_agendamento
-                `
-            ),
-            query('SELECT ROUND(AVG(ava_nota)::numeric,1) AS media FROM tb_avaliacao'),
-            query(
-                `
-                    SELECT COUNT(*)::int AS total
-                    FROM tb_usuario
-                    WHERE usu_tipo='CLIENTE'
-                        AND usu_data_cadastro >= date_trunc('month',now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo'
-                `
-            ),
-        ]);
-    const total = Number(summary.rows[0].total),
-        month =
-            monthly.rows.at(-1)?.mes ===
-            new Intl.DateTimeFormat('sv-SE', {
-                timeZone: 'America/Sao_Paulo',
-                year: 'numeric',
-                month: '2-digit',
-            })
-                .format(new Date())
-                ?.slice(0, 7)
-                ? Number(monthly.rows.at(-1).total)
-                : 0;
-    return {
-        faturamentoTotal: total,
-        faturamentoHoje: Number(summary.rows[0].today),
-        faturamentoMes: month,
-        atendimentosHoje: counts.rows[0].hoje,
-        atendimentosMes: counts.rows[0].mes,
-        ticketMedio: counts.rows[0].mes ? month / counts.rows[0].mes : 0,
-        avaliacaoMedia: Number(rating.rows[0].media || 0),
-        novosClientes: newClients.rows[0].total,
-        despesasMes: Number(expenses.rows[0].total),
-        lucroMes: month - Number(expenses.rows[0].total),
-        ultimosDias: daily.rows,
-        mensal: monthly.rows,
-        melhorDia: best.rows[0] || null,
-        carroChefe: top.rows[0] || null,
-        melhorBarbeiro: barber.rows[0] || null,
-    };
+    // Uma consulta: todos os indicadores usam o mesmo instante/snapshot do banco.
+    const sql = `
+        WITH limites AS (
+            SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AS hoje,
+                date_trunc('month', CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AS inicio
+        ),
+        ${movimentosFinanceiros},
+        movimentos_mes AS (
+            SELECT m.* FROM movimentos m CROSS JOIN limites l
+            WHERE m.dia BETWEEN l.inicio AND l.hoje
+        ),
+        resumo AS (
+            SELECT COALESCE(SUM(faturamento), 0) AS receita,
+                COALESCE(SUM(atendimentos), 0) AS quantidade,
+                COALESCE(SUM(valor_servicos), 0) AS valor_servicos
+            FROM movimentos_mes
+        ),
+        despesas AS (
+            SELECT COALESCE(SUM(d.des_valor), 0) AS total
+            FROM tb_despesa d CROSS JOIN limites l
+            WHERE d.des_data BETWEEN l.inicio AND l.hoje
+        ),
+        dias AS (
+            SELECT l.hoje - n AS dia FROM limites l CROSS JOIN generate_series(0, 6) n
+        ),
+        diario AS (
+            SELECT to_char(d.dia, 'YYYY-MM-DD') AS dia,
+                COALESCE(SUM(r.pag_valor), 0) AS total
+            FROM dias d LEFT JOIN recebimentos r ON r.dia = d.dia
+            GROUP BY d.dia
+        ),
+        meses AS (
+            SELECT (l.inicio - n * INTERVAL '1 month')::date AS mes
+            FROM limites l CROSS JOIN generate_series(0, 11) n
+        ),
+        mensal AS (
+            SELECT to_char(m.mes, 'YYYY-MM') AS mes,
+                COALESCE(SUM(r.pag_valor), 0) AS total
+            FROM meses m LEFT JOIN recebimentos r
+                ON r.dia >= m.mes AND r.dia < m.mes + INTERVAL '1 month'
+            GROUP BY m.mes
+        ),
+        melhor_dia AS (
+            SELECT to_char(dia, 'YYYY-MM-DD') AS dia,
+                SUM(faturamento) AS faturamento, SUM(atendimentos) AS atendimentos
+            FROM movimentos_mes GROUP BY dia HAVING SUM(faturamento) > 0
+            ORDER BY faturamento DESC, dia DESC LIMIT 1
+        ),
+        carro_chefe AS (
+            SELECT s.ser_id, s.ser_nome, SUM(m.atendimentos) AS quantidade,
+                SUM(m.faturamento) AS faturamento
+            FROM movimentos_mes m JOIN tb_servico s ON s.ser_id = m.ser_id
+            GROUP BY s.ser_id, s.ser_nome HAVING SUM(m.atendimentos) > 0
+            ORDER BY quantidade DESC, faturamento DESC, s.ser_id LIMIT 1
+        ),
+        pendencias AS (
+            SELECT a.age_id,
+                GREATEST(a.age_valor - COALESCE(SUM(r.pag_valor), 0), 0) AS saldo
+            FROM tb_agendamento a CROSS JOIN limites l
+            LEFT JOIN recebimentos r ON r.age_id = a.age_id
+            WHERE a.age_status = 'CONCLUIDO' AND a.age_data <= l.hoje
+            GROUP BY a.age_id, a.age_valor
+        )
+        SELECT json_build_object(
+            'faturamentoTotal', (SELECT COALESCE(SUM(pag_valor), 0) FROM recebimentos),
+            'faturamentoHoje', (SELECT COALESCE(SUM(r.pag_valor), 0) FROM recebimentos r, limites l WHERE r.dia = l.hoje),
+            'faturamentoMes', resumo.receita,
+            'atendimentosHoje', (SELECT COALESCE(SUM(m.atendimentos), 0) FROM movimentos_mes m, limites l WHERE m.dia = l.hoje),
+            'atendimentosMes', resumo.quantidade,
+            'valorServicosMes', resumo.valor_servicos,
+            'ticketMedio', COALESCE(ROUND(resumo.valor_servicos / NULLIF(resumo.quantidade, 0), 2), 0),
+            'novosClientes', (SELECT COUNT(*) FROM tb_usuario u, limites l
+                WHERE u.usu_tipo = 'CLIENTE'
+                    AND (u.usu_data_cadastro AT TIME ZONE 'America/Sao_Paulo')::date BETWEEN l.inicio AND l.hoje),
+            'despesasMes', despesas.total,
+            'lucroMes', resumo.receita - despesas.total,
+            'saldoPendente', (SELECT COALESCE(SUM(saldo), 0) FROM pendencias),
+            'ultimosDias', (SELECT json_agg(diario ORDER BY dia) FROM diario),
+            'mensal', (SELECT json_agg(mensal ORDER BY mes) FROM mensal),
+            'melhorDia', (SELECT row_to_json(melhor_dia) FROM melhor_dia),
+            'carroChefe', (SELECT row_to_json(carro_chefe) FROM carro_chefe),
+            'melhorBarbeiro', NULL,
+            'avaliacaoMedia', 0
+        ) AS dados
+        FROM resumo CROSS JOIN despesas
+    `;
+    return (await query(sql)).rows[0].dados;
 }

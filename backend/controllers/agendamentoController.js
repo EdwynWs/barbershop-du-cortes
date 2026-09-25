@@ -74,7 +74,7 @@ export async function create(req, res) {
     // Uma falha no e-mail não deve cancelar a reserva.
     void enviarConfirmacaoAgendamento(a.age_id).catch((error) => {
         console.error(
-            `Falha no e-mail do agendamento ${a.age_id}:`,
+            `Falha ao preparar os avisos do agendament ${a.age_id}:`,
             error.code || error.message
         );
     });

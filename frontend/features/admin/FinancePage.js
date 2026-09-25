@@ -9,8 +9,8 @@ import { Notice, Loading, Empty, Status } from '../../components/ui/Feedback';
 import RevenueChart from '../../components/admin/RevenueChart';
 import MetricCard from '../../components/admin/MetricCard';
 export default function FinancePage() {
-    const finance = useApi('/admin/financeiro');
-    const appointments = useApi(`/admin/agenda?inicio=${today().slice(0, 4)}-01-01&fim=${today()}`);
+    const finance = useApi('/admin/financeiro', { refreshInterval: 15000 });
+
     const [tab, setTab] = useState('Visão geral');
     const [modal, setModal] = useState('');
     const [form, setForm] = useState({});
@@ -19,13 +19,14 @@ export default function FinancePage() {
     async function save(event) {
         event.preventDefault();
         setBusy(true);
+        setError('');
         try {
             await api(modal === 'Receita' ? '/admin/pagamentos' : '/admin/despesas', {
                 method: 'POST',
                 body: JSON.stringify(form),
             });
             setModal('');
-            finance.reload();
+            await finance.reload({ silent: true });
         } catch (error) {
             setError(error.message);
         } finally {
@@ -33,6 +34,7 @@ export default function FinancePage() {
         }
     }
     function open(type) {
+        finance.reload({ silent: true });
         setModal(type);
         setError('');
         setForm(
@@ -97,10 +99,10 @@ export default function FinancePage() {
                                         icon={FiTrendingDown}
                                     />
                                     <MetricCard
-                                        label="Lucro do mês"
+                                        label="Resultado do mês"
                                         value={money(data.resumo.lucroMes)}
                                         icon={FiTrendingUp}
-                                        caption="Receitas menos despesas"
+                                        caption="Recebimentos menos despesas, do início do mês até hoje"
                                     />
                                 </div>
                                 <div className="panel chart-panel">
@@ -115,7 +117,7 @@ export default function FinancePage() {
                                     <h2>
                                         {tab === 'Visão geral'
                                             ? 'Últimos recebimentos'
-                                            : 'Recebimentos'}
+                                            : 'Recebimentos (últimos 200)'}
                                     </h2>
                                     <FiDollarSign />
                                 </div>
@@ -130,7 +132,7 @@ export default function FinancePage() {
                                                         {item.ser_nome} · {item.barbeiro}
                                                     </small>
                                                     <small>
-                                                        {dateLabel(item.pag_data)} ·{' '}
+                                                        {dateLabel(item.pag_dia || item.pag_data)} ·{' '}
                                                         {item.pag_forma.replaceAll('_', ' ')}
                                                     </small>
                                                 </div>
@@ -147,7 +149,7 @@ export default function FinancePage() {
                         )}
                         {tab === 'Despesas' && (
                             <section className="panel">
-                                <h2>Despesas</h2>
+                                <h2>Despesas (últimas 200)</h2>
                                 {data.despesas.length ? (
                                     data.despesas.map((item) => (
                                         <div className="receipt-row" key={item.des_id}>
@@ -174,35 +176,37 @@ export default function FinancePage() {
                     title={modal === 'Receita' ? 'Registrar recebimento' : 'Cadastrar despesa'}
                     onClose={() => setModal('')}
                 >
-                    <Notice>{error}</Notice>
+                    <Notice>{error || finance.error}</Notice>
+                    {modal === 'Receita' && !finance.data?.pendencias?.length && (
+                        <p>Nenhum atendimento concluído com saldo pendente.</p>
+                    )}
                     <form onSubmit={save}>
                         {modal === 'Receita' ? (
                             <>
                                 <label className="field-label">
-                                    Atendimento concluído
+                                    Atendimento com saldo pendente
                                     <select
                                         required
                                         value={form.ageId}
                                         onChange={(e) => {
-                                            const item = appointments.data?.find(
+                                            const item = finance.data?.pendencias?.find(
                                                 (item) => String(item.age_id) === e.target.value
                                             );
                                             setForm({
                                                 ...form,
                                                 ageId: e.target.value,
-                                                valor: item?.age_valor || '',
+                                                valor: item?.saldo || '',
                                             });
                                         }}
                                     >
                                         <option value="">Selecione</option>
-                                        {appointments.data
-                                            ?.filter((item) => item.age_status === 'CONCLUIDO')
-                                            .map((item) => (
-                                                <option key={item.age_id} value={item.age_id}>
-                                                    {item.cliente} · {item.ser_nome} ·{' '}
-                                                    {dateLabel(item.age_data)}
-                                                </option>
-                                            ))}
+                                        {finance.data?.pendencias?.map((item) => (
+                                            <option key={item.age_id} value={item.age_id}>
+                                                {item.cliente} · {item.ser_nome} ·{' '}
+                                                {dateLabel(item.age_data)} · Saldo:{' '}
+                                                {money(item.saldo)}
+                                            </option>
+                                        ))}
                                     </select>
                                 </label>
                                 <label className="field-label">
@@ -281,7 +285,12 @@ export default function FinancePage() {
                                 onChange={(e) => setForm({ ...form, valor: e.target.value })}
                             />
                         </label>
-                        <button className="btn-red full-width" disabled={busy}>
+                        <button
+                            className="btn-red full-width"
+                            disabled={
+                                busy || (modal === 'Receita' && !finance.data?.pendencias?.length)
+                            }
+                        >
                             Registrar {modal.toLowerCase()}
                         </button>
                     </form>

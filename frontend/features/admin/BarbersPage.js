@@ -61,8 +61,8 @@ export default function BarbersPage() {
         setForm({
             ...blank,
             id: item.bar_id,
-            nome: item.usu_nome,
-            email: item.usu_email,
+            nome: item.usu_nome || '',
+            email: item.usu_email || '',
             telefone: item.usu_telefone || '',
             descricao: item.bar_descricao || '',
             foto: item.bar_foto || '',

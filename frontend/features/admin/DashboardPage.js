@@ -4,9 +4,7 @@ import {
     FiCalendar,
     FiUsers,
     FiTag,
-    FiStar,
     FiArrowUpRight,
-    FiAward,
     FiScissors,
     FiDollarSign,
 } from 'react-icons/fi';
@@ -20,7 +18,7 @@ import RevenueChart from '../../components/admin/RevenueChart';
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const { data, loading, error } = useApi('/admin/dashboard');
+    const { data, loading, error } = useApi('/admin/dashboard', { refreshInterval: 15000 });
     return (
         <>
             <PageHeader
@@ -40,18 +38,18 @@ export default function DashboardPage() {
                     <>
                         <div className="metrics-revenue">
                             <MetricCard
-                                label="Faturamento hoje"
+                                label="Receita hoje"
                                 value={money(data.faturamentoHoje)}
                                 accent
                                 caption="Pagamentos recebidos hoje"
                             />
                             <MetricCard
-                                label="Faturamento do mês"
+                                label="Receita do mês"
                                 value={money(data.faturamentoMes)}
-                                caption="Seu resultado neste mês"
+                                caption="Recebimentos do mês até hoje"
                             />
                             <MetricCard
-                                label="Faturamento total"
+                                label="Receita total"
                                 value={money(data.faturamentoTotal)}
                                 caption="Todo o histórico da barbearia"
                             />
@@ -73,21 +71,21 @@ export default function DashboardPage() {
                                 icon={FiUsers}
                             />
                             <MetricCard
-                                label="Ticket médio"
+                                label="Ticket médio do mês"
                                 value={money(data.ticketMedio)}
                                 icon={FiTag}
                             />
                             <MetricCard
-                                label="Avaliação média"
-                                value={`${data.avaliacaoMedia || '—'} / 5`}
-                                icon={FiStar}
+                                label="A receber"
+                                value={money(data.saldoPendente)}
+                                icon={FiDollarSign}
                             />
                         </div>
                         <div className="dashboard-main-grid">
                             <section className="panel chart-panel">
                                 <div className="section-heading">
                                     <h2>
-                                        Faturamento <small>(últimos 7 dias)</small>
+                                        Recebimentos <small>(últimos 7 dias)</small>
                                     </h2>
                                     <Link href="/admin/relatorios" aria-label="Ver relatórios">
                                         <FiArrowUpRight />
@@ -102,7 +100,7 @@ export default function DashboardPage() {
                                         <FiCalendar />
                                     </span>
                                     <div>
-                                        <small>Melhor dia do mês</small>
+                                        <small>Maior receita diária do mês</small>
                                         <strong>
                                             {data.melhorDia
                                                 ? dateLabel(data.melhorDia.dia, { weekday: 'long' })
@@ -120,7 +118,7 @@ export default function DashboardPage() {
                                         <FiScissors />
                                     </span>
                                     <div>
-                                        <small>Serviço carro-chefe</small>
+                                        <small>Serviço mais realizado no mês</small>
                                         <strong>
                                             {data.carroChefe?.ser_nome || 'Sem dados ainda'}
                                         </strong>
@@ -131,16 +129,14 @@ export default function DashboardPage() {
                                     </div>
                                     <FiArrowUpRight />
                                 </Link>
-                                <Link href="/admin/barbeiros" className="highlight-row">
+                                <Link href="/admin/financeiro" className="highlight-row">
                                     <span className="highlight-icon gold">
-                                        <FiAward />
+                                        <FiDollarSign />
                                     </span>
                                     <div>
-                                        <small>Maior faturamento</small>
-                                        <strong>
-                                            {data.melhorBarbeiro?.usu_nome || 'Sem dados ainda'}
-                                        </strong>
-                                        <small>{money(data.melhorBarbeiro?.faturamento)}</small>
+                                        <small>Resultado do mês</small>
+                                        <strong>Receitas menos despesas</strong>
+                                        <small>{money(data.lucroMes)}</small>
                                     </div>
                                     <FiArrowUpRight />
                                 </Link>
@@ -148,7 +144,7 @@ export default function DashboardPage() {
                         </div>
                         <section className="panel chart-panel">
                             <div className="section-heading">
-                                <h2>Faturamento mensal</h2>
+                                <h2>Receita mensal</h2>
                                 <span className="chart-legend">
                                     <i /> Últimos 12 meses
                                 </span>

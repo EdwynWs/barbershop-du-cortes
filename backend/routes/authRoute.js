@@ -4,6 +4,8 @@ import { atualizarPerfil } from '../controllers/perfilController.js';
 import { auth } from '../middlewares/auth.js';
 import { wrap } from '../middlewares/error.js';
 const router = Router();
+router.post('/confirmar-email', wrap(controller.confirmarEmail));
+router.post('/reenviar-confirmacao',wrap(controller.reenviarConfirmacao));
 router.post('/cadastro', wrap(controller.cadastro));
 router.post('/login', wrap(controller.login));
 router.post('/logout', controller.logout);

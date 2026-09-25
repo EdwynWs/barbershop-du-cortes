@@ -4,22 +4,23 @@ import { query } from '../config/db.js';
 let transportador;
 
 function obterTransportador() {
-    const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+    const usuario = process.env.SMTP_USER?.trim();
+    const senha = process.env.SMTP_PASS?.replace(/\s/g, '');
 
-    if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-        throw new Error('Configure as variáveis SMTP no backend/.env.');
+    if (!usuario || !senha) {
+        throw new Error('Preencha SMTP_USER e SMTP_PASS no backend/.env.');
     }
 
     if (!transportador) {
-        const porta = Number(SMTP_PORT || 465);
+        const porta = Number(process.env.SMTP_PORT || 465);
 
         transportador = nodemailer.createTransport({
-            host: SMTP_HOST,
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: porta,
             secure: porta === 465,
             auth: {
-                user: SMTP_USER,
-                pass: SMTP_PASS,
+                user: usuario,
+                pass: senha,
             },
             connectionTimeout: 10000,
             greetingTimeout: 10000,
@@ -30,12 +31,38 @@ function obterTransportador() {
     return transportador;
 }
 
+// Testa a conexão e a autenticação, sem enviar mensagem.
+export async function verificarEmail() {
+    await obterTransportador().verify();
+}
+
+export async function enviarMensagem(destinatario, assunto, texto) {
+    if (!destinatario?.trim()) {
+        throw new Error('O endereço de e-mail do destinatário não foi informado.');
+    }
+
+    const resultado = await obterTransportador().sendMail({
+        from: {
+            name: 'Barbershop Du Cortes',
+            address: process.env.SMTP_USER.trim(),
+        },
+        to: destinatario.trim(),
+        subject: assunto,
+        text: texto,
+    });
+
+    if (!resultado.accepted?.length) {
+        throw new Error('O servidor não aceitou o destinatário.');
+    }
+}
+
 export async function enviarConfirmacaoAgendamento(agendamentoId) {
     const resultado = await query(
         `
             SELECT
                 cliente.usu_nome AS cliente,
-                cliente.usu_email AS email,
+                cliente.usu_email AS email_cliente,
+                cliente.usu_telefone AS telefone_cliente,
                 barbeiro.usu_nome AS barbeiro,
                 s.ser_nome AS servico,
                 TO_CHAR(a.age_data, 'DD/MM/YYYY') AS data,
@@ -54,8 +81,8 @@ export async function enviarConfirmacaoAgendamento(agendamentoId) {
 
     const agendamento = resultado.rows[0];
 
-    if (!agendamento?.email) {
-        throw new Error('Agendamento ou e-mail do cliente não encontrado.');
+    if (!agendamento) {
+        throw new Error('Agendamento não encontrado para enviar os avisos.');
     }
 
     const valor = new Intl.NumberFormat('pt-BR', {
@@ -63,7 +90,7 @@ export async function enviarConfirmacaoAgendamento(agendamentoId) {
         currency: 'BRL',
     }).format(Number(agendamento.valor));
 
-    const mensagem = [
+    const mensagemCliente = [
         `Olá, ${agendamento.cliente}!`,
         '',
         'Seu agendamento na Barbershop Du Cortes foi marcado com sucesso.',
@@ -74,23 +101,66 @@ export async function enviarConfirmacaoAgendamento(agendamentoId) {
         `Horário: ${agendamento.horario}`,
         `Valor: ${valor}`,
         '',
-        'Você pode consultar seu agendamento na área Minha agenda.',
+        'Consulte os detalhes na área Minha agenda do sistema.',
         '',
         'Te esperamos!',
         'Barbershop Du Cortes',
     ].join('\n');
 
-    const envio = await obterTransportador().sendMail({
-        from: {
-            name: 'Barbershop Du Cortes',
-            address: process.env.SMTP_USER,
-        },
-        to: agendamento.email,
-        subject: 'Seu agendamento foi marcado — Du Cortes',
-        text: mensagem,
-    });
+    const mensagemBarbeiro = [
+        `Olá, ${agendamento.barbeiro}!`,
+        '',
+        'Você recebeu um novo agendamento.',
+        '',
+        `Cliente: ${agendamento.cliente}`,
+        `Telefone: ${agendamento.telefone_cliente || 'Não informado'}`,
+        `Serviço: ${agendamento.servico}`,
+        `Data: ${agendamento.data}`,
+        `Horário: ${agendamento.horario}`,
+        `Valor: ${valor}`,
+        '',
+        `Número do agendamento: ${agendamentoId}`,
+        '',
+        'Acesse a agenda do sistema para acompanhar o atendimento.',
+    ].join('\n');
 
-    if (!envio.accepted?.length) {
-        throw new Error('O servidor de e-mail não aceitou o destinatário.');
-    }
+    // São mensagens separadas.
+    // Se uma falhar, a outra ainda será tentada.
+    const resultados = await Promise.allSettled([
+        enviarMensagem(
+            agendamento.email_cliente,
+            'Seu agendamento foi marcado — Du Cortes',
+            mensagemCliente
+        ),
+        enviarMensagem(
+            process.env.BARBEIRO_EMAIL,
+            `Novo agendamento — ${agendamento.data} às ${agendamento.horario}`,
+            mensagemBarbeiro
+        ),
+    ]);
+
+    const destinatarios = ['cliente', 'barbeiro'];
+
+    resultados.forEach((resultadoEnvio, indice) => {
+        const destinatario = destinatarios[indice];
+
+        if (resultadoEnvio.status === 'fulfilled') {
+            console.log(
+                `E-mail do ${destinatario} aceito pelo servidor — agendamento ${agendamentoId}.`
+            );
+
+            return;
+        }
+
+        const erro = resultadoEnvio.reason;
+
+        console.error(
+            `Falha no e-mail do ${destinatario} — agendamento ${agendamentoId}:`,
+            {
+                codigo: erro.code,
+                mensagem: erro.message,
+                respostaSMTP: erro.response,
+            }
+        );
+    });
 }

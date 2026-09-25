@@ -7,7 +7,8 @@ export default class BarbeiroController {
         res.json(await repository.listar());
     }
     async listarAdministrativo(req, res) {
-        res.json(await repository.listar(true));
+    const barbeiros = await repository.listar(true);
+    return res.json(barbeiros);
     }
     async cadastrar(req, res) {
         const barbeiro = new BarbeiroEntity(req.body);
