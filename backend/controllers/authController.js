@@ -88,11 +88,12 @@ export async function login(req, res) {
     res.cookie('session', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
         maxAge: 12 * 3600 * 1000,
     });
-    res.json(UsuarioEntity.toMap(usuario));
-}
+        res.json(UsuarioEntity.toMap(usuario));
+    }
 
 export async function me(req, res) {
     const usuario = await repository.buscarPorId(req.user.id);
@@ -101,7 +102,13 @@ export async function me(req, res) {
 }
 
 export function logout(req, res) {
-    res.clearCookie('session', { sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+    res.clearCookie('session', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+    });
+
     res.json({ ok: true });
 }
 
