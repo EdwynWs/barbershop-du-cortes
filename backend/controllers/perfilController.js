@@ -5,3 +5,4 @@ export async function atualizarPerfil(req, res) {
     if (typeof nome !== 'string' || !nome.trim()) fail('Informe seu nome.');
     res.json(await repository.atualizar(req.user.id, nome.trim(), telefone));
 }
+
