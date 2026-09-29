@@ -1,61 +1,98 @@
-import nodemailer from 'nodemailer';
 import { query } from '../config/db.js';
 
-let transportador;
+function configuracaoBrevo() {
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    const email = process.env.EMAIL_FROM?.trim();
 
-function obterTransportador() {
-    const usuario = process.env.SMTP_USER?.trim();
-    const senha = process.env.SMTP_PASS?.replace(/\s/g, '');
-
-    if (!usuario || !senha) {
-        throw new Error('Preencha SMTP_USER e SMTP_PASS no backend/.env.');
+    if (!apiKey || !email || !/^\S+@\S+\.\S+$/.test(email)) {
+        throw new Error(
+            'Configure BREVO_API_KEY e EMAIL_FROM com um remetente verificado na Brevo.'
+        );
     }
 
-    if (!transportador) {
-        const porta = Number(process.env.SMTP_PORT || 465);
-
-        transportador = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: porta,
-            secure: porta === 465,
-            auth: {
-                user: usuario,
-                pass: senha,
-            },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-        });
-    }
-
-    return transportador;
+    return { apiKey, email };
 }
 
-// Testa a conexão e a autenticação, sem enviar mensagem.
+async function chamarBrevo(caminho, options = {}) {
+    const { apiKey } = configuracaoBrevo();
+
+    const response = await fetch(
+        'https://api.brevo.com/v3' + caminho,
+        {
+            ...options,
+            headers: {
+                accept: 'application/json',
+                'content-type': 'application/json',
+                'api-key': apiKey,
+            },
+            signal: AbortSignal.timeout(15000),
+        }
+    );
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const motivos = {
+            400: 'Confira o remetente verificado e os dados da mensagem.',
+            401: 'Confira a chave de API da Brevo.',
+            403: 'Confira a ativação da conta e as permissões da chave na Brevo.',
+            429: 'Limite de envio atingido. Consulte sua cota na Brevo.',
+        };
+
+        const motivo =
+            motivos[response.status] ||
+            'Falha no provedor de e-mail. Consulte os logs da Brevo.';
+
+        const error = new Error(
+            `Brevo HTTP ${response.status}: ${motivo}`
+        );
+
+        error.code = `BREVO_${response.status}`;
+
+        throw error;
+    }
+
+    return data;
+}
+
+// Confere a chave sem enviar e-mail.
+// Não garante que o remetente esteja aprovado ou que a mensagem será entregue.
 export async function verificarEmail() {
-    await obterTransportador().verify();
+    await chamarBrevo('/account');
 }
 
 export async function enviarMensagem(destinatario, assunto, texto) {
     if (!destinatario?.trim()) {
-        throw new Error('O endereço de e-mail do destinatário não foi informado.');
+        throw new Error(
+            'O endereço de e-mail do destinatário não foi informado.'
+        );
     }
 
-    const resultado = await obterTransportador().sendMail({
-        from: {
-            name: 'Barbershop Du Cortes',
-            address: process.env.SMTP_USER.trim(),
-        },
-        to: destinatario.trim(),
-        subject: assunto,
-        text: texto,
+    const { email } = configuracaoBrevo();
+
+    const resultado = await chamarBrevo('/smtp/email', {
+        method: 'POST',
+        body: JSON.stringify({
+            sender: {
+                name: 'Barbershop Du Cortes',
+                email,
+            },
+            to: [
+                {
+                    email: destinatario.trim(),
+                },
+            ],
+            subject: assunto,
+            textContent: texto,
+        }),
     });
 
-    if (!resultado.accepted?.length) {
-        throw new Error('O servidor não aceitou o destinatário.');
+    if (!resultado?.messageId) {
+        throw new Error(
+            'A Brevo não confirmou a aceitação da mensagem.'
+        );
     }
 }
-
 export async function enviarConfirmacaoAgendamento(agendamentoId) {
     const resultado = await query(
         `
