@@ -7,6 +7,7 @@ import { imagemBarbeiro } from '../../config/imagens';
 import Photo from '../../components/ui/Photo';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
+import { api, money } from '../../services/api';
 import { Notice, Loading, Empty } from '../../components/ui/Feedback';
 const blank = {
     nome: '',
@@ -82,7 +83,7 @@ export default function BarbersPage() {
             const body = new FormData();
             body.append('imagem', file);
             const result = await api('/admin/imagens', { method: 'POST', body });
-            setForm((form) => ({ ...form, foto: API_URL + result.url }));
+            setForm((form) => ({...form, foto: result.url,}));
         } catch (error) {
             setError(error.message);
         } finally {

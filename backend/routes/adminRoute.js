@@ -9,6 +9,7 @@ import * as financeiro from '../controllers/financeiroController.js';
 import * as relatorio from '../controllers/relatorioController.js';
 import * as promocao from '../controllers/promocaoController.js';
 import BarbeiroController from '../controllers/barbeiroController.js';
+import { enviarImagem } from '../services/imagemService.js';
 const router = Router();
 const barbeiro = new BarbeiroController();
 router.use(auth, roles('ADMIN'));
@@ -26,8 +27,16 @@ router.post('/pagamentos', wrap(financeiro.pagamento));
 router.post('/despesas', wrap(financeiro.despesa));
 router.get('/relatorios/:type', wrap(relatorio.listar));
 router.post('/promocoes', wrap(promocao.cadastrar));
-router.post('/imagens', upload.single('imagem'), (req, res) => {
-    if (!req.file) return res.status(400).json({ erro: 'Envie JPG, PNG ou WebP de até 3 MB.' });
-    res.status(201).json({ url: `/uploads/${req.file.filename}` });
-});
+router.post('/imagens',upload.single('imagem'), wrap(async (req, res) => {
+        if (!req.file) {
+            return res.status(400).json({
+                erro: 'Envie JPG, PNG ou WebP de até 3 MB.',
+            });
+        }
+
+        const url = await enviarImagem(req.file.buffer);
+
+        res.status(201).json({ url });
+    })
+);
 export default router;

@@ -22,7 +22,7 @@ export default function ServicesPage() {
             const body = new FormData();
             body.append('imagem', file);
             const result = await api('/admin/imagens', { method: 'POST', body });
-            setForm((form) => ({ ...form, imagem: API_URL + result.url }));
+            setForm((form) => ({...form, imagem: result.url,}));
         } catch (error) {
             setMessage(error.message);
         } finally {
