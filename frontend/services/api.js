@@ -2,16 +2,29 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000
 
 export async function api(path, options = {}) {
     const isUpload = options.body instanceof FormData;
-    const response = await fetch(`${API_URL}/api${path}`, {
-        credentials: 'include',
+
+    // A chamada sai para o mesmo domínio do frontend.
+    // O Next.js encaminha a requisição ao backend.
+    const response = await fetch(`/api${path}`, {
         ...options,
+        credentials: 'include',
+        cache: 'no-store',
         headers: {
-            ...(isUpload ? {} : { 'Content-Type': 'application/json' }),
+            ...(isUpload
+                ? {}
+                : { 'Content-Type': 'application/json' }),
             ...options.headers,
         },
     });
+
     const data = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(data?.erro || 'Não foi possível concluir a solicitação.');
+
+    if (!response.ok) {
+        throw new Error(
+            data?.erro || 'Não foi possível concluir a solicitação.'
+        );
+    }
+
     return data;
 }
 
