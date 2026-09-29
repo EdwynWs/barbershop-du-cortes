@@ -67,6 +67,7 @@ export default function LoginPage() {
                         {visible ? <FiEyeOff /> : <FiEye />}
                     </button>
                 </label>
+                
                 <button className="btn-red full-width auth-submit" disabled={busy}>
                     {busy ? 'Entrando...' : 'Entrar'} <FiArrowRight />
                 </button>
@@ -76,6 +77,9 @@ export default function LoginPage() {
             </div>
             <p className="auth-switch">
                 Ainda não tem conta? <Link href="/cadastro">Cadastre-se</Link>
+            </p>
+            <p className="auth-switch">
+                    <Link href="/esqueci-senha">Esqueci minha senha</Link>
             </p>
         </AuthLayout>
     );

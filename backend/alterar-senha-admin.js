@@ -17,7 +17,10 @@ async function alterarSenha() {
     const resultado = await pool.query(
         `
             UPDATE tb_usuario
-            SET usu_senha = $1
+            SET usu_senha = $1,
+                usu_sessao_versao = usu_sessao_versao + 1,
+                usu_senha_token_hash = NULL,
+                usu_senha_token_expira = NULL
             WHERE usu_email = $2
                 AND usu_tipo = 'ADMIN'
             RETURNING usu_id

@@ -82,7 +82,7 @@ export async function login(req, res) {
             403
         );
     }
-    const token = jwt.sign({ id: usuario.usu_id, tipo: usuario.usu_tipo }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: usuario.usu_id, tipo: usuario.usu_tipo, versao: usuario.usu_sessao_versao }, process.env.JWT_SECRET, {
         expiresIn: '12h',
     });
     res.cookie('session', token, {
