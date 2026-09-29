@@ -1,13 +1,13 @@
 'use client';
+
 import { useState } from 'react';
 import { FiPlus, FiEdit2 } from 'react-icons/fi';
 import useApi from '../../hooks/useApi';
-import { api, API_URL } from '../../services/api';
+import { api } from '../../services/api';
 import { imagemBarbeiro } from '../../config/imagens';
 import Photo from '../../components/ui/Photo';
 import PageHeader from '../../components/ui/PageHeader';
 import Modal from '../../components/ui/Modal';
-import { api, money } from '../../services/api';
 import { Notice, Loading, Empty } from '../../components/ui/Feedback';
 const blank = {
     nome: '',
