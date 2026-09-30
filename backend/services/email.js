@@ -201,3 +201,91 @@ export async function enviarConfirmacaoAgendamento(agendamentoId) {
         );
     });
 }
+
+export async function enviarCancelamentoAgendamento(agendamentoId) {
+    const { rows } = await query(
+        `
+            SELECT
+                cliente.usu_nome AS cliente,
+                cliente.usu_email AS email_cliente,
+                barbeiro.usu_nome AS barbeiro,
+                s.ser_nome AS servico,
+                TO_CHAR(a.age_data, 'DD/MM/YYYY') AS data,
+                TO_CHAR(a.age_hora_inicio, 'HH24:MI') AS horario
+            FROM tb_agendamento a
+            JOIN tb_cliente c ON c.cli_id = a.cli_id
+            JOIN tb_usuario cliente ON cliente.usu_id = c.usu_id
+            JOIN tb_barbeiro b ON b.bar_id = a.bar_id
+            JOIN tb_usuario barbeiro ON barbeiro.usu_id = b.usu_id
+            JOIN tb_servico s ON s.ser_id = a.ser_id
+            WHERE a.age_id = $1
+                AND a.age_status = 'CANCELADO'
+        `,
+        [agendamentoId]
+    );
+
+    const agendamento = rows[0];
+
+    if (!agendamento) {
+        throw new Error('Agendamento cancelado não encontrado.');
+    }
+
+    const detalhes = [
+        `Número do agendamento: ${agendamentoId}`,
+        `Cliente: ${agendamento.cliente}`,
+        `Barbeiro: ${agendamento.barbeiro}`,
+        `Serviço: ${agendamento.servico}`,
+        `Data: ${agendamento.data}`,
+        `Horário: ${agendamento.horario}`,
+    ].join('\n');
+
+    const mensagens = [
+        {
+            destinatario: 'cliente',
+            email: agendamento.email_cliente,
+            texto: [
+                `Olá, ${agendamento.cliente}!`,
+                '',
+                'Seu agendamento na Barbershop Du Cortes foi cancelado.',
+                '',
+                detalhes,
+                '',
+                'Se desejar, acesse o sistema para marcar outro horário.',
+            ].join('\n'),
+        },
+        {
+            destinatario: 'barbeiro',
+            email: process.env.BARBEIRO_EMAIL,
+            texto: [
+                `Olá, ${agendamento.barbeiro}!`,
+                '',
+                'Um agendamento da sua agenda foi cancelado.',
+                '',
+                detalhes,
+                '',
+                'Consulte a agenda do sistema para acompanhar a disponibilidade.',
+            ].join('\n'),
+        },
+    ];
+
+    const resultados = await Promise.allSettled(
+        mensagens.map((mensagem) =>
+            enviarMensagem(
+                mensagem.email,
+                `Agendamento cancelado — ${agendamento.data} às ${agendamento.horario}`,
+                mensagem.texto
+            )
+        )
+    );
+
+    resultados.forEach((resultado, indice) => {
+        const destinatario = mensagens[indice].destinatario;
+
+        if (resultado.status === 'rejected') {
+            console.error(
+                `Falha no aviso de cancelamento para ${destinatario}, agendamento ${agendamentoId}:`,
+                resultado.reason?.code || resultado.reason?.message
+            );
+        }
+    });
+}

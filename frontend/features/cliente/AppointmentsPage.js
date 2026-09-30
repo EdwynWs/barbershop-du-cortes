@@ -105,7 +105,7 @@ export default function AppointmentsPage() {
                         {cancel.ser_nome} · {dateLabel(cancel.age_data)} às{' '}
                         {cancel.age_hora_inicio.slice(0, 5)}
                     </p>
-                    <p>O cancelamento é permitido até duas horas antes.</p>
+                    <p> O cancelamento é permitido com pelo menos 30 minutos de antecedência.</p>
                     <button
                         className="btn-red full-width"
                         disabled={busy}

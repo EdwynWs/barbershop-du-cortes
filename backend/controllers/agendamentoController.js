@@ -2,7 +2,10 @@ import { pool, query } from '../config/db.js';
 import { slots } from '../services/slots.js';
 import { validDate, validTime, clock, minutes, statuses } from '../entities/appointment.js';
 import { fail } from '../middlewares/error.js';
-import { enviarConfirmacaoAgendamento } from '../services/email.js';
+import {
+    enviarConfirmacaoAgendamento,
+    enviarCancelamentoAgendamento,
+} from '../services/email.js';
 export async function available(req, res) {
     res.json(await slots(req.query.barbeiro, req.query.servico, req.query.data));
 }
@@ -134,9 +137,9 @@ export async function change(req, res) {
         );
         if (
             !['AGENDADO', 'CONFIRMADO'].includes(a.age_status) ||
-            start.getTime() - Date.now() < 2 * 3600000
+            start.getTime() - Date.now() < 30 * 60 * 1000
         )
-            fail('Cancelamento permitido até duas horas antes', 409);
+            fail('Cancelamento permitido com pelo menos 30 minutos de antecedência.', 409);
     } else if (req.user.tipo === 'BARBEIRO') {
         if (
             a.barber_user !== req.user.id ||
@@ -159,7 +162,14 @@ export async function change(req, res) {
         'UPDATE tb_agendamento SET age_status=$1 WHERE age_id=$2 AND age_status=$3 RETURNING *',
         [status, id, a.age_status]
     );
-    if (!updated) fail('Status alterado por outra pessoa', 409);
+    if (status === 'CANCELADO') {
+    void enviarCancelamentoAgendamento(id).catch((error) => {
+        console.error(
+            `Falha ao preparar os avisos de cancelamento ${id}:`,
+            error.code || error.message
+        );
+    });
+}
     await query(
         "INSERT INTO tb_notificacao(usu_id,not_titulo,not_mensagem) VALUES($1,'Atualização do agendamento',$2)",
         [a.client_user, `Seu atendimento agora está ${status.toLowerCase().replaceAll('_', ' ')}.`]
