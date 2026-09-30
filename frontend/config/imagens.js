@@ -1,7 +1,7 @@
 // Coloque os arquivos nestes caminhos dentro de frontend/public.
 // As telas exibem ícones e iniciais enquanto você não adicionar as fotos.
 export const imagens = {
-    logo: '/images/logo.png',
+    logo: '/images/logo.jpg',
     ambiente: '/images/ambiente.png',
     banner: '/images/banner-corte.jpg',
     perfil: '/images/perfil.jpg',
