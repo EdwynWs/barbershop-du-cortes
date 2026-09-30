@@ -29,7 +29,7 @@ export default function LandingPage() {
                 <p>
                     Seu estilo na palma da mão.
                     <br />
-                    Escolha seu serviço e reserve seu horário com o Eduardo.
+                    Escolha seu serviço e reserve seu horário com o Júnior viana.
                 </p>
                 <Link className="btn-red" href="/login">
                     <FiCalendar /> Agendar meu horário <FiArrowRight />
