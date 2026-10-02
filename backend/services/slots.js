@@ -46,16 +46,45 @@ export async function slots(barId, serId, date, ignoreId = null) {
         day: '2-digit',
     }).format(new Date());
     if (date < today) return [];
-    const intervals = [
-        ...appointments.map((a) => [minutes(a.age_hora_inicio), minutes(a.age_hora_fim)]),
-        ...blocks.map((b) => [minutes(b.inicio), minutes(b.fim)]),
-    ];
-    if (h.hor_intervalo_inicio)
-        intervals.push([minutes(h.hor_intervalo_inicio), minutes(h.hor_intervalo_fim)]);
-    const result = [];
-    for (let m = minutes(h.hor_inicio); m + s.ser_duracao <= minutes(h.hor_fim); m += 30) {
-        if (intervals.some(([a, b]) => m < b && m + s.ser_duracao > a)) continue;
-        result.push(clock(m));
+    const occupiedStarts = appointments.map((a) =>
+    minutes(a.age_hora_inicio)
+);
+
+const blockedIntervals = blocks.map((b) => [
+    minutes(b.inicio),
+    minutes(b.fim)
+]);
+
+if (h.hor_intervalo_inicio) {
+    blockedIntervals.push([
+        minutes(h.hor_intervalo_inicio),
+        minutes(h.hor_intervalo_fim)
+    ]);
+}
+
+const result = [];
+
+for (
+    let m = minutes(h.hor_inicio);
+    m < minutes(h.hor_fim);
+    m += 30
+) {
+    // Já existe alguém exatamente neste horário
+    if (occupiedStarts.includes(m)) {
+        continue;
     }
-    return result;
+
+    // Almoço ou bloqueio manual
+    if (
+        blockedIntervals.some(
+            ([inicio, fim]) => m >= inicio && m < fim
+        )
+    ) {
+        continue;
+    }
+
+    result.push(clock(m));
+}
+
+return result;
 }
