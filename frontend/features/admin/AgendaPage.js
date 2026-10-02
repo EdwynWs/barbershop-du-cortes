@@ -13,16 +13,15 @@ import BookingForm from '../../components/admin/BookingForm';
 
 const transitions = {
     AGENDADO: [
-        ['CONFIRMADO', 'Confirmar'],
+        ['CONCLUIDO', 'Confirmar'],
         ['CANCELADO', 'Cancelar'],
         ['NAO_COMPARECEU', 'Não compareceu'],
     ],
     CONFIRMADO: [
-        ['EM_ATENDIMENTO', 'Iniciar atendimento'],
+        ['CONCLUIDO', 'Confirmar'],
         ['CANCELADO', 'Cancelar'],
         ['NAO_COMPARECEU', 'Não compareceu'],
     ],
-    EM_ATENDIMENTO: [['CONCLUIDO', 'Finalizar atendimento']],
 };
 export default function AgendaPage() {
     const [period, setPeriod] = useState({ inicio: today(), fim: today() });
@@ -42,7 +41,7 @@ export default function AgendaPage() {
                 body: JSON.stringify({ status: value }),
             });
             appointments.reload();
-            setMessage(value === 'CONCLUIDO' ? 'Atendimento concluído. Registre o pagamento para atualizar a receita.' : 'Status atualizado.');
+            setMessage(value === 'CONCLUIDO' ? 'Atendimento confirmado e venda registrada.' : 'Status atualizado.');
         } catch (error) {
             setMessage(error.message);
         }
@@ -109,11 +108,6 @@ export default function AgendaPage() {
                             </div>
                             <Status value={item.age_status} />
                             <div className="agenda-actions">
-                                {item.age_status === 'CONCLUIDO' && (
-                                    <Link className="btn-outline" href={`/admin/financeiro?agendamento=${item.age_id}`}>
-                                        Registrar pagamento
-                                    </Link>
-                                )}
                                 {transitions[item.age_status] && (
                                     <select
                                         aria-label={`Alterar atendimento de ${item.cliente}`}

@@ -167,12 +167,12 @@ export async function change(req, res) {
             fail('Sem permissão', 403);
     }
     const transitions = {
-        AGENDADO: ['CONFIRMADO', 'CANCELADO', 'NAO_COMPARECEU'],
-        CONFIRMADO: ['EM_ATENDIMENTO', 'CANCELADO', 'NAO_COMPARECEU'],
-        EM_ATENDIMENTO: ['CONCLUIDO'],
-        CONCLUIDO: [],
-        CANCELADO: [],
-        NAO_COMPARECEU: [],
+         AGENDADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
+         CONFIRMADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
+         EM_ATENDIMENTO: ['CONCLUIDO'],
+         CONCLUIDO: [],
+         CANCELADO: [],
+         NAO_COMPARECEU: [],
     };
     if (!transitions[a.age_status].includes(status)) fail('Mudança de status inválida', 409);
     const {

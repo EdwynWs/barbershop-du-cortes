@@ -75,11 +75,6 @@ export default function DashboardPage() {
                                 value={money(data.ticketMedio)}
                                 icon={FiTag}
                             />
-                            <MetricCard
-                                label="A receber"
-                                value={money(data.saldoPendente)}
-                                icon={FiDollarSign}
-                            />
                         </div>
                         <div className="dashboard-main-grid">
                             <section className="panel chart-panel">
