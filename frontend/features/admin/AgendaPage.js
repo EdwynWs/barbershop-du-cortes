@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { FiPlus, FiCalendar } from 'react-icons/fi';
 import useApi from '../../hooks/useApi';
 import { api, today, dateLabel } from '../../services/api';
@@ -41,6 +42,7 @@ export default function AgendaPage() {
                 body: JSON.stringify({ status: value }),
             });
             appointments.reload();
+            setMessage(value === 'CONCLUIDO' ? 'Atendimento concluído. Registre o pagamento para atualizar a receita.' : 'Status atualizado.');
         } catch (error) {
             setMessage(error.message);
         }
@@ -54,6 +56,7 @@ export default function AgendaPage() {
             });
             setEditing(null);
             appointments.reload();
+
         } catch (error) {
             setMessage(error.message);
         }
@@ -106,6 +109,11 @@ export default function AgendaPage() {
                             </div>
                             <Status value={item.age_status} />
                             <div className="agenda-actions">
+                                {item.age_status === 'CONCLUIDO' && (
+                                    <Link className="btn-outline" href={`/admin/financeiro?agendamento=${item.age_id}`}>
+                                        Registrar pagamento
+                                    </Link>
+                                )}
                                 {transitions[item.age_status] && (
                                     <select
                                         aria-label={`Alterar atendimento de ${item.cliente}`}
@@ -146,6 +154,7 @@ export default function AgendaPage() {
                         onSaved={() => {
                             setCreating(false);
                             appointments.reload();
+
                         }}
                     />
                 </Modal>
@@ -183,3 +192,4 @@ export default function AgendaPage() {
         </>
     );
 }
+

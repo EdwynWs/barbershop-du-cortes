@@ -1,4 +1,7 @@
 import { pool, query } from '../config/db.js';
+import { criarContato } from '../services/contato.js';
+import { telefoneBrasil } from '../services/telefone.js';
+import { enfileirarConfirmacoes } from '../services/whatsappFila.js';
 import { slots } from '../services/slots.js';
 import { validDate, validTime, clock, minutes, statuses } from '../entities/appointment.js';
 import { fail } from '../middlewares/error.js';
@@ -20,10 +23,20 @@ export async function create(req, res) {
         if (req.user.tipo !== 'ADMIN') fail('Sem permissão', 403);
         cli = Number(clienteId);
     }
-    if (!cli) fail('Cliente inválido');
+    const contato = req.user.tipo === 'ADMIN' && clienteId === 'OUTRO';
+    if (!cli && !contato) fail('Cliente inválido');
     const c = await pool.connect();
     try {
         await c.query('BEGIN');
+        if (contato) cli = await criarContato(c, req.body.outroCliente);
+        const { rows: [cliente] } = await c.query(`
+            SELECT u.usu_telefone FROM tb_cliente c
+            JOIN tb_usuario u ON u.usu_id=c.usu_id WHERE c.cli_id=$1
+        `, [cli]);
+        if (!cliente) fail('Cliente inválido');
+        const whatsapp = req.body.whatsappAutorizado === true;
+        const telefone = telefoneBrasil(cliente.usu_telefone);
+        if (whatsapp && !telefone) fail('Atualize o telefone do cliente com DDD para receber avisos.');
         const {
             rows: [service],
         } = await c.query(
@@ -71,6 +84,12 @@ export async function create(req, res) {
             `,
             [cli, data, hora]
         );
+        await c.query(`UPDATE tb_agendamento SET age_whatsapp=$2,
+            age_whatsapp_telefone=$3, age_whatsapp_autorizado_em=CASE WHEN $2 THEN now() ELSE NULL END,
+            age_whatsapp_origem=$4 WHERE age_id=$1`,
+            [a.age_id, whatsapp, whatsapp ? telefone : null,
+                whatsapp ? `${req.user.tipo}:${req.user.id}` : null]);
+        await enfileirarConfirmacoes(c, a.age_id);
         await c.query('COMMIT');
 
     // O agendamento já foi salvo.
@@ -162,6 +181,7 @@ export async function change(req, res) {
         'UPDATE tb_agendamento SET age_status=$1 WHERE age_id=$2 AND age_status=$3 RETURNING *',
         [status, id, a.age_status]
     );
+    if (!updated) fail('Status alterado por outra pessoa', 409);
     if (status === 'CANCELADO') {
     void enviarCancelamentoAgendamento(id).catch((error) => {
         console.error(
@@ -176,3 +196,4 @@ export async function change(req, res) {
     );
     res.json(updated);
 }
+

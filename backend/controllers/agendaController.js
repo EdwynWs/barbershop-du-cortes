@@ -1,5 +1,6 @@
 import { pool, query } from '../config/db.js';
 import { fail } from '../middlewares/error.js';
+import { enfileirarConfirmacoes } from '../services/whatsappFila.js';
 import { slots } from '../services/slots.js';
 import { validDate, validTime, minutes, clock } from '../entities/appointment.js';
 
@@ -56,9 +57,10 @@ export async function reschedule(req, res) {
         const {
             rows: [updated],
         } = await c.query(
-            'UPDATE tb_agendamento SET age_data=$1,age_hora_inicio=$2,age_hora_fim=$3 WHERE age_id=$4 RETURNING *',
+            'UPDATE tb_agendamento SET age_data=$1,age_hora_inicio=$2,age_hora_fim=$3,age_aviso_versao=age_aviso_versao+1 WHERE age_id=$4 RETURNING *',
             [data, hora, end, id]
         );
+        await enfileirarConfirmacoes(c, id);
         await c.query('COMMIT');
         res.json(updated);
     } catch (e) {
@@ -68,3 +70,4 @@ export async function reschedule(req, res) {
         c.release();
     }
 }
+

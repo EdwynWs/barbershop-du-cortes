@@ -9,6 +9,8 @@ export default function BookingForm({ onSaved, clientId = '' }) {
     const barbers = useApi('/barbeiros');
     const [form, setForm] = useState({
         clienteId: clientId,
+        outroCliente: { nome: '', telefone: '' },
+        whatsappAutorizado: false,
         servicoId: '',
         barbeiroId: '',
         data: today(),
@@ -47,15 +49,36 @@ export default function BookingForm({ onSaved, clientId = '' }) {
                 <select
                     required
                     value={form.clienteId}
-                    onChange={(e) => update({ clienteId: e.target.value })}
+                    onChange={(e) => update({ clienteId: e.target.value, whatsappAutorizado: false })}
                 >
                     <option value="">Selecione o cliente</option>
+                    <option value="OUTRO">Outro — cliente sem cadastro</option>
                     {clients.data?.map((item) => (
                         <option key={item.cli_id} value={item.cli_id}>
                             {item.usu_nome}
                         </option>
                     ))}
                 </select>
+            </label>
+            {form.clienteId === 'OUTRO' && (
+                <>
+                    <label className="field-label">Nome do cliente
+                        <input required minLength={2} maxLength={120}
+                            value={form.outroCliente.nome}
+                            onChange={(e) => update({ outroCliente: { ...form.outroCliente, nome: e.target.value } })} />
+                    </label>
+                    <label className="field-label">WhatsApp com DDD
+                        <input required type="tel" placeholder="(14) 99999-9999"
+                            value={form.outroCliente.telefone}
+                            onChange={(e) => update({ outroCliente: { ...form.outroCliente, telefone: e.target.value }, whatsappAutorizado: false })} />
+                    </label>
+                    <p>O contato será salvo sem criar acesso ao sistema.</p>
+                </>
+            )}
+            <label className="checkbox-label">
+                <input type="checkbox" checked={form.whatsappAutorizado}
+                    onChange={(e) => update({ whatsappAutorizado: e.target.checked })} />
+                O cliente autorizou receber confirmação e lembrete deste agendamento pelo WhatsApp.
             </label>
             <label className="field-label">
                 Serviço
@@ -124,3 +147,4 @@ export default function BookingForm({ onSaved, clientId = '' }) {
         </form>
     );
 }
+

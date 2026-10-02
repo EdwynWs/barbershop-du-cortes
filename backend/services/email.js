@@ -164,11 +164,11 @@ export async function enviarConfirmacaoAgendamento(agendamentoId) {
     // São mensagens separadas.
     // Se uma falhar, a outra ainda será tentada.
     const resultados = await Promise.allSettled([
-        enviarMensagem(
+        agendamento.email_cliente ? enviarMensagem(
             agendamento.email_cliente,
             'Seu agendamento foi marcado — Du Cortes',
             mensagemCliente
-        ),
+        ) : Promise.resolve(),
         enviarMensagem(
             process.env.BARBEIRO_EMAIL,
             `Novo agendamento — ${agendamento.data} às ${agendamento.horario}`,
@@ -269,7 +269,7 @@ export async function enviarCancelamentoAgendamento(agendamentoId) {
     ];
 
     const resultados = await Promise.allSettled(
-        mensagens.map((mensagem) =>
+        mensagens.map((mensagem) => !mensagem.email ? Promise.resolve() :
             enviarMensagem(
                 mensagem.email,
                 `Agendamento cancelado — ${agendamento.data} às ${agendamento.horario}`,

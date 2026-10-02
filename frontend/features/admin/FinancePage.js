@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FiPlus, FiDollarSign, FiTrendingDown, FiTrendingUp } from 'react-icons/fi';
 import useApi from '../../hooks/useApi';
 import { api, today, dateLabel, money } from '../../services/api';
@@ -43,6 +43,20 @@ export default function FinancePage() {
                 : { descricao: '', categoria: 'Produtos', valor: '', data: today() }
         );
     }
+    const abriuPagamento = useRef(false);
+    useEffect(() => {
+        if (!finance.data || abriuPagamento.current) return;
+        const id = new URLSearchParams(window.location.search).get('agendamento');
+        if (!id) return;
+        abriuPagamento.current = true;
+        const pendencia = finance.data.pendencias?.find((item) => String(item.age_id) === id);
+        if (!pendencia) {
+            setError('Este atendimento não tem saldo pendente disponível para recebimento.');
+            return;
+        }
+        setForm({ ageId: id, valor: pendencia.saldo, forma: 'PIX' });
+        setModal('Receita');
+    }, [finance.data]);
     const data = finance.data;
     return (
         <>
@@ -299,3 +313,4 @@ export default function FinancePage() {
         </>
     );
 }
+

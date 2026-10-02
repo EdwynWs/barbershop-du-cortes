@@ -30,6 +30,7 @@ export default function BookingPage() {
         data: '',
         hora: '',
         observacao: '',
+        whatsappAutorizado: false,
     });
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
@@ -219,6 +220,11 @@ export default function BookingPage() {
                                     placeholder="Opcional"
                                 />
                             </label>
+                            <label className="checkbox-label">
+                                <input type="checkbox" checked={form.whatsappAutorizado}
+                                    onChange={(e) => update({ whatsappAutorizado: e.target.checked })} />
+                                Quero receber confirmação e lembrete deste agendamento no WhatsApp cadastrado no meu perfil.
+                            </label>
                             <button
                                 className="btn-red full-width"
                                 disabled={busy}
@@ -238,3 +244,4 @@ export default function BookingPage() {
         </div>
     );
 }
+

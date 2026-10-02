@@ -1,44 +1,58 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../services/api';
 
-export default function useApi(path) {
+export default function useApi(path, { refreshInterval = 0 } = {}) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(Boolean(path));
     const [error, setError] = useState('');
-    const reload = useCallback(async () => {
-        if (!path) return;
-        setLoading(true);
-        setError('');
+    const sequence = useRef(0);
+    const mounted = useRef(false);
+    const fetching = useRef(false);
+
+    const reload = useCallback(async ({ silent = false } = {}) => {
+        if (!path || !mounted.current || (silent && fetching.current)) return;
+        const request = ++sequence.current;
+        fetching.current = true;
+        if (!silent) setLoading(true);
         try {
-            setData(await api(path));
+            const result = await api(path);
+            if (mounted.current && request === sequence.current) {
+                setData(result);
+                setError('');
+            }
+            return result;
         } catch (error) {
-            setError(error.message);
+            if (mounted.current && request === sequence.current) setError(error.message);
         } finally {
-            setLoading(false);
+            if (mounted.current && request === sequence.current) {
+                fetching.current = false;
+                setLoading(false);
+            }
         }
     }, [path]);
+
     useEffect(() => {
-        if (!path) {
-            setData(null);
-            return;
-        }
-        let active = true;
-        setLoading(true);
+        mounted.current = true;
+        fetching.current = false;
+        setData(null);
         setError('');
-        api(path)
-            .then((value) => {
-                if (active) setData(value);
-            })
-            .catch((error) => {
-                if (active) setError(error.message);
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
-        return () => {
-            active = false;
+        if (path) void reload();
+        else setLoading(false);
+        const refresh = () => {
+            if (document.visibilityState === 'visible') void reload({ silent: true });
         };
-    }, [path]);
+        const timer = path && refreshInterval > 0 ? setInterval(refresh, refreshInterval) : null;
+        window.addEventListener('focus', refresh);
+        document.addEventListener('visibilitychange', refresh);
+        return () => {
+            mounted.current = false;
+            ++sequence.current;
+            if (timer) clearInterval(timer);
+            window.removeEventListener('focus', refresh);
+            document.removeEventListener('visibilitychange', refresh);
+        };
+    }, [path, reload, refreshInterval]);
+
     return { data, loading, error, reload, setData };
 }
