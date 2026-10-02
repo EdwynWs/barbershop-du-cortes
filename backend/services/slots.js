@@ -45,12 +45,6 @@ export async function slots(barId, serId, date, ignoreId = null) {
         month: '2-digit',
         day: '2-digit',
     }).format(new Date());
-    const now = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'America/Sao_Paulo',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).format(new Date());
     if (date < today) return [];
     const intervals = [
         ...appointments.map((a) => [minutes(a.age_hora_inicio), minutes(a.age_hora_fim)]),
@@ -60,7 +54,6 @@ export async function slots(barId, serId, date, ignoreId = null) {
         intervals.push([minutes(h.hor_intervalo_inicio), minutes(h.hor_intervalo_fim)]);
     const result = [];
     for (let m = minutes(h.hor_inicio); m + s.ser_duracao <= minutes(h.hor_fim); m += 30) {
-        if (date === today && m <= minutes(now)) continue;
         if (intervals.some(([a, b]) => m < b && m + s.ser_duracao > a)) continue;
         result.push(clock(m));
     }
