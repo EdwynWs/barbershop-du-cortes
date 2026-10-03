@@ -12,15 +12,8 @@ import PeriodFilter from '../../components/admin/PeriodFilter';
 import BookingForm from '../../components/admin/BookingForm';
 
 const transitions = {
-    AGENDADO: [
-        ['CONCLUIDO', 'Confirmar'],
-        ['CANCELADO', 'Cancelar'],
-        ['NAO_COMPARECEU', 'Não compareceu'],
-    ],
-    CONFIRMADO: [
-        ['CONCLUIDO', 'Confirmar'],
-        ['CANCELADO', 'Cancelar'],
-        ['NAO_COMPARECEU', 'Não compareceu'],
+    CONCLUIDO: [
+        ['CANCELADO', 'Cancelar atendimento'],
     ],
 };
 export default function AgendaPage() {

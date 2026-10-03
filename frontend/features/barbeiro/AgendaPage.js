@@ -5,15 +5,9 @@ import { api, dateLabel, today } from '../../services/api';
 import PageHeader from '../../components/ui/PageHeader';
 import { Notice, Loading, Empty, Status } from '../../components/ui/Feedback';
 const transitions = {
-    AGENDADO: [
-        ['CONFIRMADO', 'Confirmar'],
-        ['NAO_COMPARECEU', 'Não compareceu'],
+    CONCLUIDO: [
+        ['CANCELADO', 'Cancelar atendimento'],
     ],
-    CONFIRMADO: [
-        ['EM_ATENDIMENTO', 'Iniciar'],
-        ['NAO_COMPARECEU', 'Não compareceu'],
-    ],
-    EM_ATENDIMENTO: [['CONCLUIDO', 'Finalizar']],
 };
 export default function BarberAgendaPage() {
     const appointments = useApi('/agendamentos/meus');

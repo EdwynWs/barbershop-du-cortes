@@ -68,12 +68,17 @@ export async function create(req, res) {
             rows: [a],
         } = await c.query(
             `
-                INSERT INTO tb_agendamento(cli_id,bar_id,ser_id,age_data,age_hora_inicio,age_hora_fim,age_valor,age_observacao)
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8)
-                RETURNING *
+            INSERT INTO tb_agendamento( cli_id, bar_id, ser_id, age_data, age_hora_inicio, age_hora_fim, age_valor, age_observacao, age_status)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8,'CONCLUIDO'
+            ) RETURNING *
             `,
             [cli, barbeiroId, servicoId, data, hora, end, service.ser_valor, observacao || null]
         );
+        await c.query(
+    `
+    INSERT INTO tb_pagamento ( age_id, pag_valor, pag_forma, pag_status, pag_data)
+    VALUES ( $1, $2, 'OUTRO', 'PAGO', CURRENT_TIMESTAMP)
+    `,[a.age_id, a.age_valor]);
         await c.query(
             `
                 INSERT INTO tb_notificacao(usu_id,not_titulo,not_mensagem) SELECT usu_id,
@@ -167,12 +172,12 @@ export async function change(req, res) {
             fail('Sem permissão', 403);
     }
     const transitions = {
-         AGENDADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
-         CONFIRMADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
-         EM_ATENDIMENTO: ['CONCLUIDO'],
-         CONCLUIDO: [],
-         CANCELADO: [],
-         NAO_COMPARECEU: [],
+        AGENDADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
+        CONFIRMADO: ['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'],
+        EM_ATENDIMENTO: ['CONCLUIDO'],
+        CONCLUIDO: ['CANCELADO'],
+        CANCELADO: [],
+        NAO_COMPARECEU: [],
     };
     if (!transitions[a.age_status].includes(status)) fail('Mudança de status inválida', 409);
     const {
@@ -209,6 +214,15 @@ export async function change(req, res) {
     );
 }
     if (status === 'CANCELADO') {
+        await query(
+    `
+    UPDATE tb_pagamento
+    SET pag_status = 'CANCELADO'
+    WHERE age_id = $1
+      AND pag_status = 'PAGO'
+    `,
+    [id]
+    );
     void enviarCancelamentoAgendamento(id).catch((error) => {
         console.error(
             `Falha ao preparar os avisos de cancelamento ${id}:`,
