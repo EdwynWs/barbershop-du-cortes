@@ -11,11 +11,7 @@ export default function LandingPage() {
                 alt="Barbershop Du Cortes"
                 className="landing-background"
             />
-            <header>
-                <Link className="btn-outline" href="/login">
-                    Entrar <FiArrowRight />
-                </Link>
-            </header>
+            
             <div className="landing-content">
                 <span className="eyebrow">BARBERSHOP DU CORTES</span>
                 <h1>
