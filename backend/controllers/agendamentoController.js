@@ -159,11 +159,14 @@ export async function change(req, res) {
         const start = new Date(
             `${a.age_data.toISOString().slice(0, 10)}T${a.age_hora_inicio}-03:00`
         );
-        if (
-            !['AGENDADO', 'CONFIRMADO'].includes(a.age_status) ||
-            start.getTime() - Date.now() < 30 * 60 * 1000
-        )
-            fail('Cancelamento permitido com pelo menos 30 minutos de antecedência.', 409);
+       if (
+         a.age_status === 'CANCELADO' ||
+         a.age_status === 'NAO_COMPARECEU' ||
+         start.getTime() - Date.now() < 30 * 60 * 1000
+    ) {
+        fail('Cancelamento permitido com pelo menos 30 minutos de antecedência.', 409);
+    }
+       
     } else if (req.user.tipo === 'BARBEIRO') {
         if (
             a.barber_user !== req.user.id ||
