@@ -16,10 +16,32 @@ export default function AppointmentsPage() {
     const [score, setScore] = useState(5);
     const [comment, setComment] = useState('');
     const [busy, setBusy] = useState(false);
-    const active = ['AGENDADO', 'CONFIRMADO', 'EM_ATENDIMENTO'];
-    const items = (data || []).filter((item) =>
-        tab === 'Próximos' ? active.includes(item.age_status) : !active.includes(item.age_status)
-    );
+    function jaVirouHistorico(item) {
+    // Cancelado vai direto para o histórico
+    if (
+        item.age_status === 'CANCELADO' ||
+        item.age_status === 'NAO_COMPARECEU'
+    ) {
+        return true;
+    }
+
+    const data = item.age_data.slice(0, 10);
+    const hora = item.age_hora_inicio.slice(0, 5);
+
+    // Horário marcado + 30 minutos
+    const limite = new Date(`${data}T${hora}:00-03:00`);
+    limite.setMinutes(limite.getMinutes() + 30);
+
+    return new Date() >= limite;
+}
+
+const items = (data || []).filter((item) => {
+    const historico = jaVirouHistorico(item);
+
+    return tab === 'Próximos'
+        ? !historico
+        : historico;
+});
     async function submit(path, body, method) {
         setBusy(true);
         try {
@@ -79,16 +101,23 @@ export default function AppointmentsPage() {
                                 </span>
                             </div>
                         </div>
-                        {['AGENDADO', 'CONFIRMADO'].includes(item.age_status) && (
-                            <button className="card-action" onClick={() => setCancel(item)}>
-                                Cancelar agendamento
-                            </button>
-                        )}
-                        {item.age_status === 'CONCLUIDO' && (
-                            <button className="card-action" onClick={() => setReview(item)}>
-                                <FiStar /> Avaliar atendimento
-                            </button>
-                        )}
+                        {!jaVirouHistorico(item) && (
+    <button
+        className="card-action"
+        onClick={() => setCancel(item)}
+    >
+        Cancelar agendamento
+    </button>
+)}
+                        {jaVirouHistorico(item) &&
+    item.age_status === 'CONCLUIDO' && (
+        <button
+            className="card-action"
+            onClick={() => setReview(item)}
+        >
+            <FiStar /> Avaliar atendimento
+        </button>
+    )}
                     </article>
                 ))
             )}
