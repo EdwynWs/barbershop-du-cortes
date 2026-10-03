@@ -11,7 +11,6 @@ export default function AuthLayout({ children }) {
                     className="auth-background"
                 />
                 <div className="auth-story-content">
-                    <Brand />
                     <h2>
                         MAIS QUE
                         <br />

@@ -182,6 +182,32 @@ export async function change(req, res) {
         [status, id, a.age_status]
     );
     if (!updated) fail('Status alterado por outra pessoa', 409);
+    if (status === 'CONCLUIDO') {
+    await query(
+        `
+        INSERT INTO tb_pagamento (
+            age_id,
+            pag_valor,
+            pag_forma,
+            pag_status,
+            pag_data
+        )
+        SELECT
+            $1,
+            $2,
+            'OUTRO',
+            'PAGO',
+            CURRENT_TIMESTAMP
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM tb_pagamento
+            WHERE age_id = $1
+              AND pag_status = 'PAGO'
+        )
+        `,
+        [updated.age_id, updated.age_valor]
+    );
+}
     if (status === 'CANCELADO') {
     void enviarCancelamentoAgendamento(id).catch((error) => {
         console.error(

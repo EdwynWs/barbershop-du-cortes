@@ -12,7 +12,6 @@ export default function LandingPage() {
                 className="landing-background"
             />
             <header>
-                <Brand compact />
                 <Link className="btn-outline" href="/login">
                     Entrar <FiArrowRight />
                 </Link>
