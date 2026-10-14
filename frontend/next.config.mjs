@@ -1,6 +1,6 @@
 const backendUrl =
     process.env.NODE_ENV === 'production'
-        ? 'https://barbershop-du-cortes-api.onrender.com'
+        ? process.env.API_URL
         : 'http://localhost:4000';
 
 const nextConfig = {
